@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TimeTracker.Shared.Entities;
+using TimeTracker.Shared.Models.TimeEntry;
+using TimeTrackerApi.Repositories;
+using TimeTrackerApi.Services;
 
 namespace TimeTrackerApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TimeEntryController : ControllerBase
+public class TimeEntryController(ITimeEntryService timeEntryService) : ControllerBase
 {
     //private readonly ITimeEntryRepository _timeEntryRepository;
 
@@ -64,22 +67,50 @@ public class TimeEntryController : ControllerBase
     //    return NoContent();
     //}
 
-    private static List<TimeEntry> _timeEntries = new()
-    {
-        new() { Id = 1, Project = "Time Tracker App", Start = DateTime.Now.AddHours(-2), End = DateTime.Now.AddHours(-1) },
-        new() { Id = 2, Project = "Project 2", Start = DateTime.Now.AddHours(-1), End = DateTime.Now }
-    };
+
 
     [HttpGet]
-    public ActionResult<List<TimeEntry>> GetALlTimeEntries()
+    public ActionResult<List<TimeEntryResponse>> GetALlTimeEntries()
     {
-        return Ok(_timeEntries);
+        return Ok(timeEntryService.GetAllTimeEntries());
+    }
+
+    [HttpGet("{id}")]
+    public ActionResult<TimeEntryResponse> GetTimeEntry(int id)
+    {
+        var result = timeEntryService.GetTimeEntry(id);
+        if (result == null)
+        {
+            return NotFound("Time entry with given Id was not found");
+        }
+        return Ok(result);
     }
 
     [HttpPost]
-    public ActionResult<List<TimeEntry>> CreateimeEntry(TimeEntry timeEntry)
+    public ActionResult<List<TimeEntryResponse>> CreateimeEntry(TimeEntryCreateRequest timeEntry)
     {
-        _timeEntries.Add(timeEntry);
-        return Ok(_timeEntries);
+        return Ok(timeEntryService.AddTimeEntry(timeEntry));
+    }
+
+    [HttpPut("{id}")]
+    public ActionResult<List<TimeEntryResponse>> UpdateTimeEntry(int id, TimeEntryUpdateRequest timeEntry)
+    {
+        var result = timeEntryService.UpdateTimeEntry(id, timeEntry);
+        if (result == null)
+        {
+            return NotFound("Time entry with given Id was not found");
+        }
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public ActionResult<List<TimeEntryResponse>> DeleteTimeEntry(int id)
+    {
+        var result = timeEntryService.DeleteTimeEntry(id);
+        if (result == null)
+        {
+            return NotFound("Time entry with given Id was not found");
+        }
+        return Ok(result);
     }
 }
