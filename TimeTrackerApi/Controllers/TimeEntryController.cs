@@ -64,7 +64,7 @@ public class TimeEntryController : ControllerBase
     //    return NoContent();
     //}
 
-    private static List<TimeEntry> _timeEntries = new List<TimeEntry>
+    private static List<TimeEntry> _timeEntries = new()
     {
         new() { Id = 1, Project = "Time Tracker App", Start = DateTime.Now.AddHours(-2), End = DateTime.Now.AddHours(-1) },
         new() { Id = 2, Project = "Project 2", Start = DateTime.Now.AddHours(-1), End = DateTime.Now }
@@ -73,6 +73,13 @@ public class TimeEntryController : ControllerBase
     [HttpGet]
     public ActionResult<List<TimeEntry>> GetALlTimeEntries()
     {
+        return Ok(_timeEntries);
+    }
+
+    [HttpPost]
+    public ActionResult<List<TimeEntry>> CreateimeEntry(TimeEntry timeEntry)
+    {
+        _timeEntries.Add(timeEntry);
         return Ok(_timeEntries);
     }
 }
