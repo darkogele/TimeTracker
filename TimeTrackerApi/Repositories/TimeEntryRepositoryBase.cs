@@ -1,63 +1,53 @@
-﻿using TimeTracker.Shared.Entities;
+﻿using TimeTrackerApi.Data;
 
 namespace TimeTrackerApi.Repositories;
 
-public class TimeEntryRepository : ITimeEntryRepository
+public class TimeEntryRepository(DataContext dataContext) : ITimeEntryRepository
 {
-    private List<TimeEntry> _timeEntries = new()
+    public async Task<List<TimeEntry>> GetAllTimeEntries()
     {
-        new() { Id = 1, Project = "Time Tracker App", Start = DateTime.Now.AddHours(-2), End = DateTime.Now.AddHours(-1) },
-        new() { Id = 2, Project = "Project 2", Start = DateTime.Now.AddHours(-1), End = DateTime.Now }
-    };
-
-    public TimeEntryRepository()
-    {
-        _timeEntries.Add(new TimeEntry { Id = 1, Project = "Project 1", Start = DateTime.Now, End = DateTime.Now.AddHours(1) });
-        _timeEntries.Add(new TimeEntry { Id = 2, Project = "Project 2", Start = DateTime.Now, End = DateTime.Now.AddHours(2) });
-        _timeEntries.Add(new TimeEntry { Id = 3, Project = "Project 3", Start = DateTime.Now, End = DateTime.Now.AddHours(3) });
+        return await dataContext.TimeEntries.ToListAsync();
     }
 
-    public List<TimeEntry> GetAllTimeEntries()
+    public async Task<TimeEntry?> GetTimeEntry(int id)
     {
-        return _timeEntries;
+        return await dataContext.TimeEntries.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public TimeEntry? GetTimeEntry(int id)
+    public async Task<List<TimeEntry>> CreateTimeEntry(TimeEntry timeEntry)
     {
-        return _timeEntries.FirstOrDefault(x => x.Id == id);
+        dataContext.TimeEntries.Add(timeEntry);
+        await dataContext.SaveChangesAsync();
+
+        return await dataContext.TimeEntries.ToListAsync();
     }
 
-    public List<TimeEntry> AddTimeEntry(TimeEntry timeEntry)
+    public async Task<List<TimeEntry>> UpdateTimeEntry(int id, TimeEntry timeEntry)
     {
-        timeEntry.Id = _timeEntries.Max(x => x.Id) + 1;
-        _timeEntries.Add(timeEntry);
-        return _timeEntries;
-    }
-
-    public List<TimeEntry>? UpdateTimeEntry(int id, TimeEntry timeEntry)
-    {
-        var existingEntry = _timeEntries.FirstOrDefault(x => x.Id == id);
-        if (existingEntry == null)
-        {
-            return null;
-        }
+        var existingEntry = await dataContext.TimeEntries.FirstOrDefaultAsync(x => x.Id == id)
+            ?? throw new EntityNotFoundException($"Time entry with Id {id} not found");
 
         existingEntry.Project = timeEntry.Project;
         existingEntry.Start = timeEntry.Start;
         existingEntry.End = timeEntry.End;
         existingEntry.UpdatedDate = DateTime.Now;
-        return _timeEntries;
+
+        await dataContext.SaveChangesAsync();
+
+        return await dataContext.TimeEntries.ToListAsync();
     }
 
-    public List<TimeEntry>? DeleteTimeEntry(int id)
+    public async Task<List<TimeEntry>?> DeleteTimeEntry(int id)
     {
-        var existingEntry = _timeEntries.FirstOrDefault(x => x.Id == id);
+        var existingEntry = await dataContext.TimeEntries.FirstOrDefaultAsync(x => x.Id == id);
         if (existingEntry == null)
         {
             return null;
         }
 
-        _timeEntries.Remove(existingEntry);
-        return _timeEntries;
+        dataContext.Remove(existingEntry);
+        await dataContext.SaveChangesAsync();
+
+        return await dataContext.TimeEntries.ToListAsync();
     }
 }
