@@ -1,50 +1,88 @@
 ﻿@page "/timeentries"
-@inject HttpClient Http
+@inject ITimeEntryService TimeEntryService
+@inject NavigationManager NavigationManager
+@implements IDisposable
 
 <PageTitle>TIme Entries</PageTitle>
 
 <h3>Time Entries</h3>
 
+<button class="btn btn-primary mb-2" @onclick="CreateTimeEntry">
+    Create Time Entry
+</button>
+
 <table>
     <thead>
-    <tr>
-        <th>Start</th>
-        <th>End</th>
-        <th>Project</th>
-        <th>Duration</th>
-    </tr>
+        <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Project</th>
+            <th>Duration</th>
+            <th></th>
+        </tr>
     </thead>
     <tbody>
-    @foreach (var timeEntry in timeEntries)
-    {
-        <tr>
-            <td>@timeEntry.Start</td>
-            <td>@timeEntry.End</td>
-            <td>@timeEntry.Project.Name</td>
-            <td>@GetDuration(timeEntry.Start, timeEntry.End)</td>
-        </tr>
-    }
+        @foreach (var timeEntry in TimeEntryService.TimeEntries)
+        {
+            <tr>
+                <td>@timeEntry.Start</td>
+                <td>@timeEntry.End</td>
+                <td>@timeEntry.Project.Name</td>
+                <td>@GetDuration(timeEntry.Start, timeEntry.End)</td>
+                <td>
+                    <button class="btn btn-primary"
+                            @onclick="() => ShowProject(timeEntry.Project.Id)">
+                        Details
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-primary"
+                            @onclick="() => EditTimeEntry(timeEntry.Id)">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
+@if (projectId > 0)
+{
+    <ProjectDetails ProjectId="@projectId" />
+}
+
 @code {
-    private List<TimeEntryResponse> timeEntries = [];
+    int projectId = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await Http.GetFromJsonAsync<List<TimeEntryResponse>>("api/TimeEntry");
-        if (result is not null)
-        {
-            timeEntries = result;
-        }
+        await TimeEntryService.GetTimeEntriesByProject(projectId);
+        TimeEntryService.OnChange += StateHasChanged;
     }
 
     private string GetDuration(DateTime? start, DateTime? end)
     {
         if (start is null || end is null) return "";
-        
+
         var duration = end.Value - start.Value;
         var result = $"{duration.Hours}h {duration.Minutes}m";
         return result;
+    }
+
+    private void ShowProject(int id)
+    {
+        if (projectId == id) return;
+
+        projectId = id;
+        StateHasChanged();
+    }
+
+    private void CreateTimeEntry() => NavigationManager.NavigateTo("/timeentry");
+
+    private void EditTimeEntry(int id) => NavigationManager.NavigateTo($"/timeentry/{id}");
+  
+    public void Dispose()
+    {
+        TimeEntryService.OnChange -= StateHasChanged;
     }
 }

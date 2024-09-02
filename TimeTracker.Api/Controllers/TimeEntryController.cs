@@ -25,7 +25,7 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
     }
 
     [HttpGet("project/{projectId:int}")]
-    public async Task<ActionResult<List<TimeEntryByProjectResponse>>> GetTimeEntryByProject(int projectId)
+    public async Task<ActionResult<List<TimeEntryResponse>>> GetTimeEntryByProject(int projectId)
     {
         return Ok(await timeEntryService.GetTimeEntriesByProject(projectId));
     }

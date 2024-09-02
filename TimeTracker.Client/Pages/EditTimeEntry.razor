@@ -1,0 +1,20 @@
+﻿@page "/timeentry"
+@page "/timeentry/{id:int?}"
+@inject ITimeEntryService TimeEntryService
+
+<h3>EditTimeEntry</h3>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id.HasValue)
+        {
+            var result = await TimeEntryService.GetTimeEntryById(Id.Value);
+        }
+    }
+}
+
+https://learn.dotnetwebacademy.com/courses/net-7-web-api-blazor-webassembly-masterclass/lectures/51472724
