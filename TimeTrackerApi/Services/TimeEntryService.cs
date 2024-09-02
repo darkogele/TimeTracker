@@ -49,7 +49,7 @@ public class TimeEntryService(ITimeEntryRepository timeEntryRepository)
         }
         catch (EntityNotFoundException ex)
         {
-
+            Console.WriteLine(ex.Message);
             return null;
         }
     }
