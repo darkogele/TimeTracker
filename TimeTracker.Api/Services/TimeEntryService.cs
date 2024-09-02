@@ -2,8 +2,7 @@
 
 namespace TimeTrackerApi.Services;
 
-public class TimeEntryService(ITimeEntryRepository timeEntryRepository)
-    : ITimeEntryService
+public class TimeEntryService(ITimeEntryRepository timeEntryRepository) : ITimeEntryService
 {
     public async Task<List<TimeEntryResponse>> AddTimeEntry(TimeEntryCreateRequest timeEntry)
     {
@@ -17,11 +16,15 @@ public class TimeEntryService(ITimeEntryRepository timeEntryRepository)
     public async Task<List<TimeEntryResponse>?> DeleteTimeEntry(int id)
     {
         var result = await timeEntryRepository.DeleteTimeEntry(id);
-        if (result == null)
-        {
-            return null;
-        }
-        return result.Adapt<List<TimeEntryResponse>>();
+
+        return result?.Adapt<List<TimeEntryResponse>>();
+    }
+
+    public async Task<List<TimeEntryByProjectResponse>> GetTimeEntriesByProject(int projectId)
+    {
+        var result = await timeEntryRepository.GetTimeEntriesByProject(projectId);
+
+        return result.Adapt<List<TimeEntryByProjectResponse>>();
     }
 
     public async Task<List<TimeEntryResponse>> GetAllTimeEntries()
@@ -44,7 +47,7 @@ public class TimeEntryService(ITimeEntryRepository timeEntryRepository)
         {
             var updatedEntry = timeEntry.Adapt<TimeEntry>();
             var result = await timeEntryRepository.UpdateTimeEntry(id, updatedEntry);
-           
+
             return result.Adapt<List<TimeEntryResponse>>();
         }
         catch (EntityNotFoundException ex)

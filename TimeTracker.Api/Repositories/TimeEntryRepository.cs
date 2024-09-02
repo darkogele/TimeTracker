@@ -6,12 +6,18 @@ public class TimeEntryRepository(DataContext dataContext) : ITimeEntryRepository
 {
     public async Task<List<TimeEntry>> GetAllTimeEntries()
     {
-        return await dataContext.TimeEntries.ToListAsync();
+        return await dataContext.TimeEntries
+            .Include(x => x.Project)
+            .ThenInclude(x => x!.ProjectDetails)
+            .ToListAsync();
     }
 
     public async Task<TimeEntry?> GetTimeEntry(int id)
     {
-        return await dataContext.TimeEntries.FirstOrDefaultAsync(x => x.Id == id);
+        return await dataContext.TimeEntries
+            .Include(x => x.Project)
+            .ThenInclude(x => x!.ProjectDetails)
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<List<TimeEntry>> CreateTimeEntry(TimeEntry timeEntry)
@@ -19,15 +25,15 @@ public class TimeEntryRepository(DataContext dataContext) : ITimeEntryRepository
         dataContext.TimeEntries.Add(timeEntry);
         await dataContext.SaveChangesAsync();
 
-        return await dataContext.TimeEntries.ToListAsync();
+        return await GetAllTimeEntries();
     }
 
     public async Task<List<TimeEntry>> UpdateTimeEntry(int id, TimeEntry timeEntry)
     {
         var existingEntry = await dataContext.TimeEntries.FirstOrDefaultAsync(x => x.Id == id)
-            ?? throw new EntityNotFoundException($"Time entry with Id {id} not found");
+                            ?? throw new EntityNotFoundException($"Time entry with Id {id} not found");
 
-        existingEntry.Project = timeEntry.Project;
+        existingEntry.ProjectId = timeEntry.ProjectId;
         existingEntry.Start = timeEntry.Start;
         existingEntry.End = timeEntry.End;
         existingEntry.UpdatedDate = DateTime.Now;
@@ -40,14 +46,20 @@ public class TimeEntryRepository(DataContext dataContext) : ITimeEntryRepository
     public async Task<List<TimeEntry>?> DeleteTimeEntry(int id)
     {
         var existingEntry = await dataContext.TimeEntries.FirstOrDefaultAsync(x => x.Id == id);
-        if (existingEntry == null)
-        {
-            return null;
-        }
+        if (existingEntry == null) return null;
 
         dataContext.Remove(existingEntry);
         await dataContext.SaveChangesAsync();
 
-        return await dataContext.TimeEntries.ToListAsync();
+        return await GetAllTimeEntries();
+    }
+
+    public async Task<List<TimeEntry>> GetTimeEntriesByProject(int projectId)
+    {
+        return await dataContext.TimeEntries
+            .Where(x => x.ProjectId == projectId)
+            .Include(x => x.Project)
+            .ThenInclude(x => x!.ProjectDetails)
+            .ToListAsync();
     }
 }

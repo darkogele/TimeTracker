@@ -12,7 +12,7 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
         return Ok(await timeEntryService.GetAllTimeEntries());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<TimeEntryResponse>> GetTimeEntry(int id)
     {
         var result = await timeEntryService.GetTimeEntry(id);
@@ -20,7 +20,14 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
         {
             return NotFound("Time entry with given Id was not found");
         }
+
         return Ok(result);
+    }
+
+    [HttpGet("project/{projectId:int}")]
+    public async Task<ActionResult<List<TimeEntryByProjectResponse>>> GetTimeEntryByProject(int projectId)
+    {
+        return Ok(await timeEntryService.GetTimeEntriesByProject(projectId));
     }
 
     [HttpPost]
@@ -29,7 +36,7 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
         return Ok(await timeEntryService.AddTimeEntry(timeEntry));
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<ActionResult<List<TimeEntryResponse>>> UpdateTimeEntry(int id, TimeEntryUpdateRequest timeEntry)
     {
         var result = await timeEntryService.UpdateTimeEntry(id, timeEntry);
@@ -37,10 +44,11 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
         {
             return NotFound("Time entry with given Id was not found");
         }
+
         return Ok(result);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<ActionResult<List<TimeEntryResponse>>> DeleteTimeEntry(int id)
     {
         var result = await timeEntryService.DeleteTimeEntry(id);
@@ -48,6 +56,7 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
         {
             return NotFound("Time entry with given Id was not found");
         }
+
         return Ok(result);
     }
 }
