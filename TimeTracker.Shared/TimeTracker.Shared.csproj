@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Models\TimeEntry\TimeEntryCreateRequest.cs~RF1f51e79e.TMP" />
+  </ItemGroup>
+
 </Project>

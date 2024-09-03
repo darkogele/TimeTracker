@@ -1,4 +1,5 @@
 ﻿@page "/timeentries"
+
 @inject ITimeEntryService TimeEntryService
 @inject NavigationManager NavigationManager
 @implements IDisposable
@@ -11,40 +12,32 @@
     Create Time Entry
 </button>
 
-<table>
-    <thead>
-        <tr>
-            <th>Start</th>
-            <th>End</th>
-            <th>Project</th>
-            <th>Duration</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var timeEntry in TimeEntryService.TimeEntries)
-        {
-            <tr>
-                <td>@timeEntry.Start</td>
-                <td>@timeEntry.End</td>
-                <td>@timeEntry.Project.Name</td>
-                <td>@GetDuration(timeEntry.Start, timeEntry.End)</td>
-                <td>
-                    <button class="btn btn-primary"
-                            @onclick="() => ShowProject(timeEntry.Project.Id)">
-                        Details
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-primary"
-                            @onclick="() => EditTimeEntry(timeEntry.Id)">
-                        Edit
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<QuickGrid Items="@TimeEntryService.TimeEntries.AsQueryable()" Pagination="@pagination">
+    <PropertyColumn Title="Start" Property="t =>t.Start" />
+    <PropertyColumn Title="End" Property="t =>t.End" />
+    <PropertyColumn Title="Duration" Property="t =>GetDuration(t.Start, t.End)" />
+    <PropertyColumn Title="Project" Property="t => t.Project.Name">
+        <ColumnOptions>
+            <div>
+                <input type="search" autofocus @bind="projectFilter" @bind:event="oninput" placeholder="Search..." />
+            </div>
+        </ColumnOptions>
+    </PropertyColumn>
+    <TemplateColumn>
+        <button class="btn btn-primary"
+                @onclick="() => ShowProject(context.Project.Id)">
+            Details
+        </button>
+    </TemplateColumn>
+    <TemplateColumn>
+        <button class="btn btn-primary"
+                @onclick="() => EditTimeEntry(context.Id)">
+            Edit
+        </button>
+    </TemplateColumn>
+</QuickGrid>
+
+<Paginator State="@pagination" />
 
 @if (projectId > 0)
 {
@@ -53,6 +46,22 @@
 
 @code {
     int projectId = 0;
+    string? projectFilter;
+    PaginationState pagination = new() { ItemsPerPage = 10 };
+
+    IQueryable<TimeEntryResponse> FilteredTimeEntries
+    {
+        get
+        {
+            var result = TimeEntryService.TimeEntries.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(projectFilter))
+            {
+                result = result.Where(t => t.Project.Name
+                    .Contains(projectFilter, StringComparison.OrdinalIgnoreCase));
+            }
+            return result;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,7 +89,7 @@
     private void CreateTimeEntry() => NavigationManager.NavigateTo("/timeentry");
 
     private void EditTimeEntry(int id) => NavigationManager.NavigateTo($"/timeentry/{id}");
-  
+
     public void Dispose()
     {
         TimeEntryService.OnChange -= StateHasChanged;

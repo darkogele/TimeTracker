@@ -17,7 +17,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -100,4 +100,15 @@ a, .btn-link {
 
 code {
     color: #c02d76;
+}
+
+/*.validation-message{
+    margin-top: 0.25rem;
+    color:blue;
+    font-size: 0.8rem;
+}*/
+
+.quickgrid[theme=default], table, th, td {
+    border: 1px solid black;
+    padding: 10px;
 }

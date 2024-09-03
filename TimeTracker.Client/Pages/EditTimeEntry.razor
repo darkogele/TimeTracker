@@ -1,20 +1,103 @@
 ﻿@page "/timeentry"
 @page "/timeentry/{id:int?}"
 @inject ITimeEntryService TimeEntryService
+@inject IProjectService ProjectService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@implements IDisposable
 
-<h3>EditTimeEntry</h3>
+@if (Id is null)
+{
+    <h3>Create Time Entry</h3>
+}
+else
+{
+    <h3>Edit Time Entry</h3>
+}
+
+<EditForm Model="timeEntry" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="start">Start</label>
+        <InputDate Type="InputDateType.DateTimeLocal" id="start" @bind-Value="timeEntry.Start" class="form-control" />
+    </div>
+
+    <div>
+        <label for="start">End</label>
+        <InputDate Type="InputDateType.DateTimeLocal" id="start" @bind-Value="timeEntry.End" class="form-control" />
+    </div>
+    <div>
+        <label for="project">Project</label>
+        <InputSelect id="project" @bind-Value="timeEntry.ProjectId" class="form-control">
+            <option value="0">Select Project</option>
+            @foreach (var project in ProjectService.Projects)
+            {
+                <option value="@project.Id">@project.Name</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => timeEntry.ProjectId)" />
+    </div>
+
+    @if (Id.HasValue)
+    {
+        <button class="btn btn-danger mt-2 mx-1" type="button" @onclick="DeleteTimeEntry">Delete</button>
+    }
+
+    <button type="submit" class="btn btn-primary mt-2">Submit</button>
+</EditForm>
 
 @code {
     [Parameter]
     public int? Id { get; set; }
+
+    TimeEntryRequest timeEntry = new();
+
+    protected override void OnInitialized()
+    {
+        ProjectService.OnChange += StateHasChanged;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         if (Id.HasValue)
         {
             var result = await TimeEntryService.GetTimeEntryById(Id.Value);
+            timeEntry = new TimeEntryRequest
+                {
+                    End = result.End,
+                    Start = result.Start,
+                    ProjectId = result.Project.Id
+                };
         }
     }
-}
 
-https://learn.dotnetwebacademy.com/courses/net-7-web-api-blazor-webassembly-masterclass/lectures/51472724
+    async Task HandleSubmit()
+    {
+        if (Id.HasValue)
+        {
+            Console.WriteLine($"Update Entry {Id}");
+            await TimeEntryService.UpdateTimeEntry(Id.Value, timeEntry);
+        }
+        else
+        {
+            Console.WriteLine("Create Entry");
+            await TimeEntryService.CreateTimeEntry(timeEntry);
+        }
+        NavigationManager.NavigateTo("/timeentries");
+    }
+
+    async Task DeleteTimeEntry()
+    {
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", "Do you really want to delete this entry?");
+        if (confirm && Id.HasValue)
+        {
+            await TimeEntryService.DeleteTimeEntry(Id.Value);
+            NavigationManager.NavigateTo("/timeentries");
+        }      
+    }
+
+    public void Dispose()
+    {
+        ProjectService.OnChange -= StateHasChanged;
+    }
+}

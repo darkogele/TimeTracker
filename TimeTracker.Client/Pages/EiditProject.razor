@@ -1,0 +1,84 @@
+﻿@page "/project"
+@page "/project/{id:int}"
+@using Mapster
+@inject IProjectService ProjectService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@if (Id is null)
+{
+    <PageTitle>Create a new Project</PageTitle>
+    <h3>Create Project</h3>
+}
+else
+{
+    <PageTitle>Edit Project</PageTitle>
+    <h3>Edit Project "@project.Name"</h3>
+}
+
+<EditForm Model="project" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="project.Name" class="form-control" />
+        <ValidationMessage For="() => project.Name" />
+    </div>
+
+    <div>
+        <label for="description">Description</label>
+        <InputTextArea id="description" @bind-Value="project.Description" class="form-control" />
+    </div>
+
+    <div>
+        <label for="startDate">Start</label>
+        <InputDate id="startDate" @bind-Value="project.StartDate" class="form-control" />
+    </div>
+
+    <div>
+        <label for="endDate">End</label>
+        <InputDate id="endDate" @bind-Value="project.EndDate" class="form-control" />
+    </div>
+
+    @if (Id.HasValue)
+    {
+        <button type="button" class="btn btn-danger mt-2 mx-1" @onclick="DeleteProject">Delete</button>
+    }
+    <button type="submit" class="btn btn-primary mt-2">Submit</button>
+</EditForm>
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    ProjectRequest project = new() { Name = "", };
+
+    override protected async Task OnParametersSetAsync()
+    {
+        if (Id.HasValue)
+        {
+            var result = await ProjectService.GetProjectById(Id.Value);
+            project = result.Adapt<ProjectRequest>();
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id.HasValue)
+        {
+            await ProjectService.UpdateProject(Id.Value, project);
+        }
+        else
+        {
+            await ProjectService.CreateProject(project);
+        }
+        NavigationManager.NavigateTo("/projects");
+    }
+
+    async Task DeleteProject()
+    {
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", "Do you really want to delete this project?");
+        if (confirm && Id.HasValue)
+        {
+            await ProjectService.DeleteProject(Id.Value);
+            NavigationManager.NavigateTo("/projects");
+        }
+    }
+}
