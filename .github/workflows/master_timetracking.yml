@@ -62,4 +62,4 @@ jobs:
           app-name: 'TimeTracking'
           slot-name: 'Production'
           package: .
-          
+          startup-command: 'dotnet TimeTracker.Api.dll'
