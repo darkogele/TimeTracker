@@ -56,4 +56,16 @@ public class TimeEntryService(ITimeEntryRepository timeEntryRepository) : ITimeE
             return null;
         }
     }
+
+    public async Task<TimeEntryResponseWrapper> GetTimeEntryWrapper(int skip, int take)
+    {
+        var timeEntries = await timeEntryRepository.GetTimeEntries(skip, take);
+        var count = await timeEntryRepository.GeTimeEntriesCount();
+
+        return new TimeEntryResponseWrapper
+        {
+            TimeEntries = timeEntries.Adapt<List<TimeEntryResponse>>(),
+            TotalCount = count
+        };
+    }
 }

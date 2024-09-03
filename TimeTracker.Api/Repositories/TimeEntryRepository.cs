@@ -62,4 +62,19 @@ public class TimeEntryRepository(DataContext dataContext) : ITimeEntryRepository
             .ThenInclude(x => x!.ProjectDetails)
             .ToListAsync();
     }
+
+    public async Task<List<TimeEntry>> GetTimeEntries(int skip, int limit)
+    {
+        return await dataContext.TimeEntries
+             .Include(x => x.Project)
+             .ThenInclude(x => x!.ProjectDetails)
+             .Skip(skip)
+             .Take(limit)
+             .ToListAsync();
+    }
+
+    public async Task<int> GeTimeEntriesCount()
+    {
+        return await dataContext.TimeEntries.CountAsync();
+    }
 }

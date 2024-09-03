@@ -30,6 +30,12 @@ public class TimeEntryController(ITimeEntryService timeEntryService) : Controlle
         return Ok(await timeEntryService.GetTimeEntriesByProject(projectId));
     }
 
+    [HttpGet("{skip:int}/{take:int}")]
+    public async Task<ActionResult<TimeEntryResponseWrapper>> GetTimeEntryWrapper(int skip, int take)
+    {
+        return Ok(await timeEntryService.GetTimeEntryWrapper(skip, take));
+    }
+
     [HttpPost]
     public async Task<ActionResult<List<TimeEntryResponse>>> CreateimeEntry(TimeEntryCreateRequest timeEntry)
     {

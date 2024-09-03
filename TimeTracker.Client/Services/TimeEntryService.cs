@@ -49,4 +49,9 @@ public class TimeEntryService(HttpClient http) : ITimeEntryService
     {
         await http.DeleteAsync($"api/timeentry/{id}");
     }
+
+    public async Task<TimeEntryResponseWrapper> GetTimeEntries(int skip, int take)
+    {
+        return await http.GetFromJsonAsync<TimeEntryResponseWrapper>($"api/timeentry/{skip}/{take}");
+    }
 }

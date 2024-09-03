@@ -8,6 +8,10 @@ public interface ITimeEntryService
     public List<TimeEntryResponse> TimeEntries{ get; set; }
 
     Task GetTimeEntriesByProject(int projectId);
+
+    // Pagination
+    Task<TimeEntryResponseWrapper> GetTimeEntries(int skip, int take);
+
     Task<TimeEntryResponse> GetTimeEntryById(int id);
     Task CreateTimeEntry(TimeEntryRequest timeEntry);
     Task UpdateTimeEntry(int id, TimeEntryRequest timeEntry);
