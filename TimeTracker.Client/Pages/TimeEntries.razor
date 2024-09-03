@@ -12,7 +12,7 @@
     Create Time Entry
 </button>
 
-<QuickGrid Items="@TimeEntryService.TimeEntries.AsQueryable()" Pagination="@pagination">
+<QuickGrid Items="@FilteredTimeEntries" Pagination="@pagination">
     <PropertyColumn Title="Start" Property="t =>t.Start" />
     <PropertyColumn Title="End" Property="t =>t.End" />
     <PropertyColumn Title="Duration" Property="t =>GetDuration(t.Start, t.End)" />
