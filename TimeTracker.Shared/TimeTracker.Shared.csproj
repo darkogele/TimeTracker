@@ -10,4 +10,8 @@
     <None Remove="Models\TimeEntry\TimeEntryCreateRequest.cs~RF1f51e79e.TMP" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
+  </ItemGroup>
+
 </Project>
